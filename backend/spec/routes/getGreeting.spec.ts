@@ -1,3 +1,5 @@
+export {};
+/* eslint-disable @typescript-eslint/no-var-requires */
 const getGreeting = require('../../src/routes/getGreeting');
 
 test('it returns the greeting correctly', async () => {

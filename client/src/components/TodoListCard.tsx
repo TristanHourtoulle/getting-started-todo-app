@@ -2,40 +2,52 @@ import { useCallback, useEffect, useState } from 'react';
 import { AddItemForm } from './AddNewItemForm';
 import { ItemDisplay } from './ItemDisplay';
 
+interface TodoItem {
+    id: string;
+    name: string;
+    completed: boolean;
+}
+
 export function TodoListCard() {
-    const [items, setItems] = useState(null);
+    const [items, setItems] = useState<TodoItem[] | null>(null);
 
     useEffect(() => {
         fetch('/api/items')
             .then((r) => r.json())
-            .then(setItems);
+            .then((data: TodoItem[]) => setItems(data));
     }, []);
 
     const onNewItem = useCallback(
-        (newItem) => {
-            setItems([...items, newItem]);
+        (newItem: TodoItem) => {
+            setItems((prev) => (prev ? [...prev, newItem] : [newItem]));
         },
-        [items],
+        [],
     );
 
     const onItemUpdate = useCallback(
-        (item) => {
-            const index = items.findIndex((i) => i.id === item.id);
-            setItems([
-                ...items.slice(0, index),
-                item,
-                ...items.slice(index + 1),
-            ]);
+        (item: TodoItem) => {
+            setItems((prev) => {
+                if (!prev) return prev;
+                const index = prev.findIndex((i) => i.id === item.id);
+                return [
+                    ...prev.slice(0, index),
+                    item,
+                    ...prev.slice(index + 1),
+                ];
+            });
         },
-        [items],
+        [],
     );
 
     const onItemRemoval = useCallback(
-        (item) => {
-            const index = items.findIndex((i) => i.id === item.id);
-            setItems([...items.slice(0, index), ...items.slice(index + 1)]);
+        (item: TodoItem) => {
+            setItems((prev) => {
+                if (!prev) return prev;
+                const index = prev.findIndex((i) => i.id === item.id);
+                return [...prev.slice(0, index), ...prev.slice(index + 1)];
+            });
         },
-        [items],
+        [],
     );
 
     if (items === null) return 'Loading...';

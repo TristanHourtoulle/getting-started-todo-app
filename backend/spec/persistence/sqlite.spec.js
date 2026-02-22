@@ -1,6 +1,12 @@
-const db = require('../../src/persistence/sqlite');
 const fs = require('fs');
-const location = process.env.SQLITE_DB_LOCATION || '/etc/todos/todo.db';
+const path = require('path');
+const os = require('os');
+
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'todo-test-'));
+const location = path.join(tmpDir, 'todo.db');
+process.env.SQLITE_DB_LOCATION = location;
+
+const db = require('../../src/persistence/sqlite');
 
 const ITEM = {
     id: '7aef3d7c-d301-4846-8358-2a91ec9d6be3',
@@ -11,6 +17,15 @@ const ITEM = {
 beforeEach(() => {
     if (fs.existsSync(location)) {
         fs.unlinkSync(location);
+    }
+});
+
+afterAll(() => {
+    if (fs.existsSync(location)) {
+        fs.unlinkSync(location);
+    }
+    if (fs.existsSync(tmpDir)) {
+        fs.rmdirSync(tmpDir);
     }
 });
 

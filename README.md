@@ -40,7 +40,7 @@ Le backend suit une architecture hexagonale :
 ## Lancement
 
 ```bash
-git clone <url-du-repo>
+git clone https://github.com/TristanHourtoulle/getting-started-todo-app
 cd getting-started-todo-app
 docker compose up --watch
 ```

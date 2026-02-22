@@ -15,8 +15,8 @@ Utiliser Docker Compose pour orchestrer l'ensemble de l'environnement de dévelo
 - **`compose.yaml`** à la racine du projet
 - **Services** :
   - `client` : frontend React (Vite), port 5173, hot reload via `watch`
-  - `backend` : serveur Express, port 3001, rechargement automatique
-  - `db` : MySQL 8, volume persistant
+  - `backend` : serveur Express, port 3000, rechargement automatique
+  - `db` : MySQL 9, volume persistant
   - `phpmyadmin` : interface d'administration de la base
   - `proxy` : Traefik pour le routage (localhost, db.localhost)
 

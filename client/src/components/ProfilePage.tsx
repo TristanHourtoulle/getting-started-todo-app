@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import Card from 'react-bootstrap/Card';
+import Modal from 'react-bootstrap/Modal';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
@@ -20,6 +21,7 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [error, setError] = useState('');
     const [deleting, setDeleting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         api.getProfile()
@@ -42,11 +44,8 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
         }
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure? This will permanently delete your account and all your data.')) {
-            return;
-        }
-
+    const handleDeleteConfirm = async () => {
+        setShowDeleteModal(false);
         setDeleting(true);
         try {
             await api.deleteProfile();
@@ -79,10 +78,28 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                 <Button variant="outline-primary" onClick={handleExport}>
                     Export My Data
                 </Button>
-                <Button variant="danger" onClick={handleDelete} disabled={deleting}>
+                <Button variant="danger" onClick={() => setShowDeleteModal(true)} disabled={deleting}>
                     {deleting ? 'Deleting...' : 'Delete My Account'}
                 </Button>
             </div>
+
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Account Deletion</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure? This will permanently delete your account and all your data.
+                    This action cannot be undone.
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteConfirm}>
+                        Delete My Account
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

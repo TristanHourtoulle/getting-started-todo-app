@@ -3,13 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { api } from '../services/api';
-
-interface TodoItem {
-    id: string;
-    name: string;
-    completed: boolean;
-    userId: string;
-}
+import { TodoItem } from '../types/todo';
 
 interface AddItemFormProps {
     onNewItem: (item: TodoItem) => void;

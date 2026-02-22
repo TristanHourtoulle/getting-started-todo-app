@@ -7,14 +7,8 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
 import { api } from '../services/api';
+import { TodoItem } from '../types/todo';
 import './ItemDisplay.scss';
-
-interface TodoItem {
-    id: string;
-    name: string;
-    completed: boolean;
-    userId: string;
-}
 
 interface ItemDisplayProps {
     item: TodoItem;

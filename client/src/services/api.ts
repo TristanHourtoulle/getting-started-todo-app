@@ -1,11 +1,9 @@
+import { TodoItem } from '../types/todo';
+
 let authToken: string | null = null;
 
 export function setToken(token: string | null) {
     authToken = token;
-}
-
-export function getToken(): string | null {
-    return authToken;
 }
 
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -65,22 +63,25 @@ export const api = {
     },
 
     exportData() {
-        return request<{ user: object; todos: object[] }>('/api/auth/export');
+        return request<{
+            user: { id: string; email: string; createdAt: string } | null;
+            todos: TodoItem[];
+        }>('/api/auth/export');
     },
 
     getItems() {
-        return request<{ id: string; name: string; completed: boolean; userId: string }[]>('/api/items');
+        return request<TodoItem[]>('/api/items');
     },
 
     addItem(name: string) {
-        return request<{ id: string; name: string; completed: boolean; userId: string }>('/api/items', {
+        return request<TodoItem>('/api/items', {
             method: 'POST',
             body: JSON.stringify({ name }),
         });
     },
 
     updateItem(id: string, data: { name: string; completed: boolean }) {
-        return request<{ id: string; name: string; completed: boolean; userId: string }>(`/api/items/${id}`, {
+        return request<TodoItem>(`/api/items/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data),
         });

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { api, setToken, getToken } from '../services/api';
+import { api, setToken } from '../services/api';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
     const context = useContext(AuthContext);
     if (!context) {

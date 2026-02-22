@@ -2,13 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AddItemForm } from './AddNewItemForm';
 import { ItemDisplay } from './ItemDisplay';
 import { api } from '../services/api';
-
-interface TodoItem {
-    id: string;
-    name: string;
-    completed: boolean;
-    userId: string;
-}
+import { TodoItem } from '../types/todo';
 
 export function TodoListCard() {
     const [items, setItems] = useState<TodoItem[] | null>(null);

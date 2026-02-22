@@ -1,16 +1,11 @@
 import { makeAddItem } from '../../src/routes/addItem';
-import { TodoRepository } from '../../src/domain/todo';
+import { createMockRepo } from '../helpers/createMockRepo';
 import { v4 as uuid } from 'uuid';
 
 jest.mock('uuid', () => ({ v4: jest.fn() }));
 
-const mockRepo: jest.Mocked<Pick<TodoRepository, 'storeItem' | 'getItem' | 'removeItem'>> = {
-  removeItem: jest.fn(),
-  storeItem: jest.fn(),
-  getItem: jest.fn(),
-};
-
-const addItem = makeAddItem(mockRepo as unknown as TodoRepository);
+const mockRepo = createMockRepo();
+const addItem = makeAddItem(mockRepo);
 
 test('it stores item correctly', async () => {
   const id = 'something-not-a-uuid';
@@ -24,10 +19,10 @@ test('it stores item correctly', async () => {
 
   const expectedItem = { id, name, completed: false };
 
-  expect(mockRepo.storeItem.mock.calls.length).toBe(1);
-  expect(mockRepo.storeItem.mock.calls[0]?.[0]).toEqual(expectedItem);
-  expect(res.send.mock.calls[0]?.length).toBe(1);
-  expect(res.send.mock.calls[0]?.[0]).toEqual(expectedItem);
+  expect(mockRepo.storeItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.storeItem).toHaveBeenCalledWith(expectedItem);
+  expect(res.send).toHaveBeenCalledTimes(1);
+  expect(res.send).toHaveBeenCalledWith(expectedItem);
 });
 
 test('it stores item with undefined name when body has no name', async () => {
@@ -42,7 +37,7 @@ test('it stores item with undefined name when body has no name', async () => {
 
   const expectedItem = { id, name: undefined, completed: false };
 
-  expect(mockRepo.storeItem.mock.calls.length).toBe(1);
-  expect(mockRepo.storeItem.mock.calls[0]?.[0]).toEqual(expectedItem);
-  expect(res.send.mock.calls[0]?.[0]).toEqual(expectedItem);
+  expect(mockRepo.storeItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.storeItem).toHaveBeenCalledWith(expectedItem);
+  expect(res.send).toHaveBeenCalledWith(expectedItem);
 });

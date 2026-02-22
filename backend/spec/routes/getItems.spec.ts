@@ -1,13 +1,10 @@
 import { makeGetItems } from '../../src/routes/getItems';
-import { TodoRepository } from '../../src/domain/todo';
+import { createMockRepo } from '../helpers/createMockRepo';
 
 const ITEMS = [{ id: '12345', name: 'Test', completed: false }];
 
-const mockRepo: jest.Mocked<Pick<TodoRepository, 'getItems'>> = {
-  getItems: jest.fn(),
-};
-
-const getItems = makeGetItems(mockRepo as unknown as TodoRepository);
+const mockRepo = createMockRepo();
+const getItems = makeGetItems(mockRepo);
 
 test('it gets items correctly', async () => {
   const req = {};
@@ -16,7 +13,7 @@ test('it gets items correctly', async () => {
 
   await getItems(req as any, res as any);
 
-  expect(mockRepo.getItems.mock.calls.length).toBe(1);
-  expect(res.send.mock.calls[0]?.length).toBe(1);
-  expect(res.send.mock.calls[0]?.[0]).toEqual(ITEMS);
+  expect(mockRepo.getItems).toHaveBeenCalledTimes(1);
+  expect(res.send).toHaveBeenCalledTimes(1);
+  expect(res.send).toHaveBeenCalledWith(ITEMS);
 });

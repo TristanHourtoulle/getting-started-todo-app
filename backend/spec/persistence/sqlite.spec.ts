@@ -21,6 +21,10 @@ beforeEach(() => {
   db = new SqliteTodoRepository(location);
 });
 
+afterEach(async () => {
+  await db.teardown();
+});
+
 afterAll(() => {
   if (fs.existsSync(location)) {
     fs.unlinkSync(location);
@@ -32,7 +36,6 @@ afterAll(() => {
 
 test('it initializes correctly', async () => {
   await db.init();
-  await db.teardown();
 });
 
 test('it can store and retrieve items', async () => {
@@ -43,7 +46,6 @@ test('it can store and retrieve items', async () => {
   const items = await db.getItems();
   expect(items.length).toBe(1);
   expect(items[0]).toEqual(ITEM);
-  await db.teardown();
 });
 
 test('it can update an existing item', async () => {
@@ -59,7 +61,6 @@ test('it can update an existing item', async () => {
   const items = await db.getItems();
   expect(items.length).toBe(1);
   expect(items[0]?.completed).toBe(!ITEM.completed);
-  await db.teardown();
 });
 
 test('it can remove an existing item', async () => {
@@ -70,7 +71,6 @@ test('it can remove an existing item', async () => {
 
   const items = await db.getItems();
   expect(items.length).toBe(0);
-  await db.teardown();
 });
 
 test('it can get a single item', async () => {
@@ -79,5 +79,4 @@ test('it can get a single item', async () => {
 
   const item = await db.getItem(ITEM.id);
   expect(item).toEqual(ITEM);
-  await db.teardown();
 });

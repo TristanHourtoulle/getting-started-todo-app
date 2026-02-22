@@ -7,6 +7,7 @@ interface SqliteRow {
   id: string;
   name: string;
   completed: number;
+  user_id: string;
 }
 
 const verbose = sqlite3.verbose();
@@ -40,7 +41,7 @@ export class SqliteTodoRepository implements TodoRepository {
           console.log(`Using sqlite database at ${this.location}`);
 
         this.getDb().run(
-          'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean)',
+          'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, user_id varchar(36))',
           (err: Error | null) => {
             if (err) return reject(err);
             resolve();
@@ -62,17 +63,23 @@ export class SqliteTodoRepository implements TodoRepository {
     });
   }
 
-  async getItems(): Promise<TodoItem[]> {
+  async getItems(userId: string): Promise<TodoItem[]> {
     return new Promise((resolve, reject) => {
-      this.getDb().all('SELECT * FROM todo_items', (err: Error | null, rows: SqliteRow[]) => {
-        if (err) return reject(err);
-        resolve(
-          rows.map((item) => ({
-            ...item,
-            completed: item.completed === 1,
-          })),
-        );
-      });
+      this.getDb().all(
+        'SELECT * FROM todo_items WHERE user_id = ?',
+        [userId],
+        (err: Error | null, rows: SqliteRow[]) => {
+          if (err) return reject(err);
+          resolve(
+            rows.map((item) => ({
+              id: item.id,
+              name: item.name,
+              completed: item.completed === 1,
+              userId: item.user_id,
+            })),
+          );
+        },
+      );
     });
   }
 
@@ -80,12 +87,14 @@ export class SqliteTodoRepository implements TodoRepository {
     return new Promise((resolve, reject) => {
       this.getDb().all('SELECT * FROM todo_items WHERE id=?', [id], (err: Error | null, rows: SqliteRow[]) => {
         if (err) return reject(err);
-        resolve(
-          rows.map((item) => ({
-            ...item,
-            completed: item.completed === 1,
-          }))[0],
-        );
+        const row = rows[0];
+        if (!row) return resolve(undefined);
+        resolve({
+          id: row.id,
+          name: row.name,
+          completed: row.completed === 1,
+          userId: row.user_id,
+        });
       });
     });
   }
@@ -93,8 +102,8 @@ export class SqliteTodoRepository implements TodoRepository {
   async storeItem(item: TodoItem): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getDb().run(
-        'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
-        [item.id, item.name, item.completed ? 1 : 0],
+        'INSERT INTO todo_items (id, name, completed, user_id) VALUES (?, ?, ?, ?)',
+        [item.id, item.name, item.completed ? 1 : 0, item.userId],
         (err: Error | null) => {
           if (err) return reject(err);
           resolve();
@@ -119,6 +128,15 @@ export class SqliteTodoRepository implements TodoRepository {
   async removeItem(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getDb().run('DELETE FROM todo_items WHERE id = ?', [id], (err: Error | null) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
+  async removeItemsByUserId(userId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.getDb().run('DELETE FROM todo_items WHERE user_id = ?', [userId], (err: Error | null) => {
         if (err) return reject(err);
         resolve();
       });

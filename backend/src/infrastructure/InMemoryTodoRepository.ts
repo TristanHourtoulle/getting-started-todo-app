@@ -11,8 +11,8 @@ export class InMemoryTodoRepository implements TodoRepository {
     this.items.clear();
   }
 
-  async getItems(): Promise<TodoItem[]> {
-    return Array.from(this.items.values());
+  async getItems(userId: string): Promise<TodoItem[]> {
+    return Array.from(this.items.values()).filter((item) => item.userId === userId);
   }
 
   async getItem(id: string): Promise<TodoItem | undefined> {
@@ -31,5 +31,13 @@ export class InMemoryTodoRepository implements TodoRepository {
 
   async removeItem(id: string): Promise<void> {
     this.items.delete(id);
+  }
+
+  async removeItemsByUserId(userId: string): Promise<void> {
+    for (const [id, item] of this.items) {
+      if (item.userId === userId) {
+        this.items.delete(id);
+      }
+    }
   }
 }

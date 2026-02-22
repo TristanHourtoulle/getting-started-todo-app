@@ -8,6 +8,7 @@ export function makeAddItem(repo: TodoRepository) {
       id: uuid(),
       name: req.body.name,
       completed: false,
+      userId: req.userId!,
     };
 
     await repo.storeItem(item);

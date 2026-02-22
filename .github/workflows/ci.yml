@@ -29,8 +29,12 @@ jobs:
         run: npm test
 
   dependency-audit:
-    name: Dependency Audit
+    if: github.event_name == 'pull_request'
+    name: Dependency Audit (${{ matrix.dir }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [backend, client]
 
     steps:
       - uses: actions/checkout@v4
@@ -38,19 +42,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.dir }}/package-lock.json
 
-      - name: Install backend dependencies
-        working-directory: backend
+      - name: Install dependencies
+        working-directory: ${{ matrix.dir }}
         run: npm ci
 
-      - name: Audit backend dependencies
-        working-directory: backend
-        run: npm audit --audit-level=critical
-
-      - name: Install client dependencies
-        working-directory: client
-        run: npm ci
-
-      - name: Audit client dependencies
-        working-directory: client
+      - name: Audit dependencies
+        working-directory: ${{ matrix.dir }}
         run: npm audit --audit-level=critical

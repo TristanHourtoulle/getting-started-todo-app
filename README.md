@@ -1,56 +1,154 @@
-# Getting Started Todo App
+# Todo List — Clean Code Refactoring
 
-This project provides a sample todo list application. It demonstrates all of
-the current Docker best practices, ranging from the Compose file, to the
-Dockerfile, to CI (using GitHub Actions), and running tests. It's intended to 
-be well-documented to ensure anyone can come in and easily learn.
+Application Todo List refondue selon les principes du clean code : TypeScript strict, architecture hexagonale (Ports/Adapters), authentification JWT et conformité RGPD.
 
-## Application architecture
-
-![image](https://github.com/docker/getting-started-todo-app/assets/313480/c128b8e4-366f-4b6f-ad73-08e6652b7c4d)
-
-
-This sample application is a simple React frontend that receives data from a
-Node.js backend. 
-
-When the application is packaged and shipped, the frontend is compiled into
-static HTML, CSS, and JS and then bundled with the backend where it is then
-served as static assets. So no... there is no server-side rendering going on
-with this sample app.
-
-During development, since the backend and frontend need different dev tools, 
-they are split into two separate services. This allows [Vite](https://vitejs.dev/) 
-to manage the React app while [nodemon](https://nodemon.io/) works with the 
-backend. With containers, it's easy to separate the development needs!
-
-## Development
-
-To spin up the project, simply install Docker Desktop and then run the following 
-commands:
+## Architecture
 
 ```
-git clone https://github.com/docker/getting-started-todo-app
+┌─────────────┐     ┌──────────────┐     ┌───────────┐
+│   React     │────▶│   Express    │────▶│  MySQL /  │
+│   (Vite)    │◀────│   (API)      │◀────│  SQLite   │
+│   :5173     │     │   :3000      │     │           │
+└─────────────┘     └──────────────┘     └───────────┘
+       │                    │
+       └────────┬───────────┘
+                │
+         ┌──────┴──────┐
+         │   Traefik   │
+         │   (proxy)   │
+         │    :80      │
+         └─────────────┘
+```
+
+- **Frontend** (`client/`) : React 18, Vite, TypeScript, React Bootstrap
+- **Backend** (`backend/`) : Node.js 22, Express, TypeScript
+- **Base de données** : MySQL 9 (production) / SQLite (développement local)
+- **Proxy** : Traefik v3 (routage frontend/backend/phpMyAdmin)
+
+### Pattern Ports/Adapters
+
+Le backend suit une architecture hexagonale :
+
+- **Domaine** (`src/domain/`) : interfaces `TodoRepository` et `UserRepository`
+- **Infrastructure** (`src/infrastructure/`) : implémentations concrètes (InMemory, SQLite, MySQL)
+- **Routes** (`src/routes/`) : factory functions recevant les repositories par injection de dépendances
+
+## Prérequis
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (inclut Docker Compose)
+
+## Lancement
+
+```bash
+git clone <url-du-repo>
 cd getting-started-todo-app
 docker compose up --watch
 ```
 
-You'll see several container images get downloaded from Docker Hub and, after a
-moment, the application will be up and running! No need to install or configure
-anything on your machine!
+L'application est accessible à :
 
-Simply open to [http://localhost](http://localhost) to see the app up and running!
+| Service      | URL                                          |
+| ------------ | -------------------------------------------- |
+| Application  | [http://localhost](http://localhost)          |
+| phpMyAdmin   | [http://db.localhost](http://db.localhost)    |
 
-Any changes made to either the backend or frontend should be seen immediately
-without needing to rebuild or restart the containers.
+Le mode `--watch` synchronise automatiquement les fichiers sources avec les conteneurs (hot reload).
 
-To help with the database, the development stack also includes phpMyAdmin, which
-can be accessed at [http://db.localhost](http://db.localhost) (most browsers will 
-resolve `*.localhost` correctly, so no hosts file changes should be required).
+### Arrêt
 
-### Tearing it down
-
-When you're done, simply remove the containers by running the following command:
-
-```
+```bash
 docker compose down
 ```
+
+## Tests
+
+### Backend (unitaires + intégration)
+
+```bash
+cd backend
+npm install
+npm test
+```
+
+Les tests utilisent `InMemoryRepository` — aucune base de données nécessaire.
+
+### Frontend (E2E)
+
+```bash
+cd client
+npm install
+npx playwright install
+npm run test:e2e
+```
+
+## Structure du projet
+
+```
+/
+├── backend/
+│   ├── src/
+│   │   ├── domain/              # Couche métier (interfaces)
+│   │   │   ├── todo.ts          # TodoItem + TodoRepository
+│   │   │   └── user.ts          # User + UserRepository
+│   │   ├── infrastructure/      # Implémentations concrètes
+│   │   │   ├── InMemory*.ts     # Adapters pour les tests
+│   │   │   ├── Sqlite*.ts       # Adapters SQLite
+│   │   │   └── Mysql*.ts        # Adapters MySQL
+│   │   ├── routes/
+│   │   │   ├── items.ts         # Routes CRUD todos
+│   │   │   └── auth.ts          # Routes authentification + RGPD
+│   │   └── index.ts             # Point d'entrée, DI, configuration
+│   ├── tests/                   # Tests unitaires et intégration
+│   └── package.json
+├── client/
+│   ├── src/
+│   │   ├── components/          # Composants React
+│   │   ├── contexts/            # AuthContext (état d'authentification)
+│   │   ├── services/            # Client API (fetch + token JWT)
+│   │   └── types/               # Types partagés
+│   └── package.json
+├── docs/
+│   └── adr/                     # Architecture Decision Records
+├── compose.yaml                 # Orchestration Docker
+├── Dockerfile                   # Build multi-étapes (frontend + backend)
+└── README.md
+```
+
+## Authentification
+
+- **Inscription** : `POST /api/auth/register` (email + mot de passe)
+- **Connexion** : `POST /api/auth/login` (retourne un JWT)
+- **Profil** : `GET /api/auth/profile` (données utilisateur)
+
+Le token JWT est envoyé via le header `Authorization: Bearer <token>`.
+
+## RGPD
+
+- **Export des données** : `GET /api/auth/export` — téléchargement JSON de toutes les données personnelles
+- **Suppression du compte** : `DELETE /api/auth/profile` — suppression en cascade (utilisateur + todos)
+- **Minimisation** : seuls l'email et le mot de passe hashé sont stockés
+
+## Stack technique
+
+| Composant    | Technologie                    |
+| ------------ | ------------------------------ |
+| Frontend     | React 18, Vite, TypeScript     |
+| UI           | React Bootstrap                |
+| Backend      | Node.js 22, Express, TypeScript|
+| Auth         | JWT (jsonwebtoken), bcryptjs   |
+| BDD          | MySQL 9 / SQLite               |
+| Tests        | Vitest, Playwright             |
+| Conteneurs   | Docker, Docker Compose         |
+| Proxy        | Traefik v3                     |
+
+## Documentation des décisions
+
+Les Architecture Decision Records (ADR) sont disponibles dans [`docs/adr/`](docs/adr/) :
+
+- [ADR-001](docs/adr/ADR-001-monorepo-separation.md) — Monorepo avec séparation frontend/backend
+- [ADR-002](docs/adr/ADR-002-typescript-migration.md) — Migration TypeScript
+- [ADR-003](docs/adr/ADR-003-ports-adapters.md) — Pattern Ports/Adapters
+- [ADR-004](docs/adr/ADR-004-inmemory-repository.md) — InMemoryRepository pour les tests
+- [ADR-005](docs/adr/ADR-005-jwt-authentication.md) — JWT pour l'authentification
+- [ADR-006](docs/adr/ADR-006-rgpd-compliance.md) — Conformité RGPD
+- [ADR-007](docs/adr/ADR-007-docker-compose.md) — Docker Compose pour l'environnement

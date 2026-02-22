@@ -51,3 +51,23 @@ test('it passes partial body fields to updateItem', async () => {
         completed: true,
     });
 });
+
+test('it sends undefined when updating a non-existent item', async () => {
+    const req = {
+        params: { id: 'non-existent-id' },
+        body: { name: 'Updated', completed: true },
+    };
+    const res = { send: jest.fn() };
+
+    db.updateItem.mockClear();
+    db.getItem.mockClear();
+    db.getItem.mockReturnValue(Promise.resolve(undefined));
+
+    await updateItem(req, res);
+
+    expect(db.updateItem.mock.calls.length).toBe(1);
+    expect(db.updateItem.mock.calls[0][0]).toBe('non-existent-id');
+    expect(db.getItem.mock.calls.length).toBe(1);
+    expect(db.getItem.mock.calls[0][0]).toBe('non-existent-id');
+    expect(res.send.mock.calls[0][0]).toBeUndefined();
+});

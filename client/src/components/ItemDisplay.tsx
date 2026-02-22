@@ -6,13 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
+import { api } from '../services/api';
+import { TodoItem } from '../types/todo';
 import './ItemDisplay.scss';
-
-interface TodoItem {
-    id: string;
-    name: string;
-    completed: boolean;
-}
 
 interface ItemDisplayProps {
     item: TodoItem;
@@ -22,22 +18,14 @@ interface ItemDisplayProps {
 
 export function ItemDisplay({ item, onItemUpdate, onItemRemoval }: ItemDisplayProps) {
     const toggleCompletion = () => {
-        fetch(`/api/items/${item.id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                name: item.name,
-                completed: !item.completed,
-            }),
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then((r) => r.json())
-            .then(onItemUpdate);
+        api.updateItem(item.id, {
+            name: item.name,
+            completed: !item.completed,
+        }).then(onItemUpdate);
     };
 
     const removeItem = () => {
-        fetch(`/api/items/${item.id}`, { method: 'DELETE' }).then(() =>
-            onItemRemoval(item),
-        );
+        api.deleteItem(item.id).then(() => onItemRemoval(item));
     };
 
     return (

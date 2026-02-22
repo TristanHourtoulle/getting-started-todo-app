@@ -10,14 +10,15 @@ const addItem = makeAddItem(mockRepo);
 test('it stores item correctly', async () => {
   const id = 'something-not-a-uuid';
   const name = 'A sample item';
-  const req = { body: { name } };
+  const userId = 'user-1';
+  const req = { body: { name }, userId };
   const res = { send: jest.fn() };
 
   (uuid as jest.Mock).mockReturnValue(id);
 
   await addItem(req as any, res as any);
 
-  const expectedItem = { id, name, completed: false };
+  const expectedItem = { id, name, completed: false, userId };
 
   expect(mockRepo.storeItem).toHaveBeenCalledTimes(1);
   expect(mockRepo.storeItem).toHaveBeenCalledWith(expectedItem);
@@ -27,7 +28,8 @@ test('it stores item correctly', async () => {
 
 test('it stores item with undefined name when body has no name', async () => {
   const id = 'another-uuid';
-  const req = { body: {} };
+  const userId = 'user-1';
+  const req = { body: {}, userId };
   const res = { send: jest.fn() };
 
   (uuid as jest.Mock).mockReturnValue(id);
@@ -35,7 +37,7 @@ test('it stores item with undefined name when body has no name', async () => {
 
   await addItem(req as any, res as any);
 
-  const expectedItem = { id, name: undefined, completed: false };
+  const expectedItem = { id, name: undefined, completed: false, userId };
 
   expect(mockRepo.storeItem).toHaveBeenCalledTimes(1);
   expect(mockRepo.storeItem).toHaveBeenCalledWith(expectedItem);

@@ -1,4 +1,5 @@
 import { TodoRepository } from '../../src/domain/todo';
+import { UserRepository } from '../../src/domain/user';
 
 type MockedMethods<T> = {
   [K in keyof T]: jest.Mock;
@@ -15,6 +16,22 @@ export function createMockRepo(
     storeItem: jest.fn(),
     updateItem: jest.fn(),
     removeItem: jest.fn(),
+    removeItemsByUserId: jest.fn(),
+    ...overrides,
+  };
+}
+
+export function createMockUserRepo(
+  overrides: Partial<MockedMethods<UserRepository>> = {},
+): jest.Mocked<UserRepository> {
+  return {
+    init: jest.fn(),
+    teardown: jest.fn(),
+    createUser: jest.fn(),
+    findByEmail: jest.fn(),
+    findById: jest.fn(),
+    deleteUser: jest.fn(),
+    getAllUserData: jest.fn(),
     ...overrides,
   };
 }

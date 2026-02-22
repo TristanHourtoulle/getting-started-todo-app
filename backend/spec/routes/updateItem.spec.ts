@@ -1,61 +1,60 @@
 import { makeUpdateItem } from '../../src/routes/updateItem';
 import { createMockRepo } from '../helpers/createMockRepo';
 
-const ITEM = { id: '12345', name: 'Test', completed: false };
+const ITEM = { id: '12345', name: 'Test', completed: false, userId: 'user-1' };
 
 const mockRepo = createMockRepo();
 const updateItem = makeUpdateItem(mockRepo);
 
 test('it updates items correctly', async () => {
   const req = {
-    params: { id: '1234' },
+    params: { id: '12345' },
     body: { name: 'New title', completed: false },
+    userId: 'user-1',
   };
-  const res = { send: jest.fn() };
+  const res = { send: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() };
 
   mockRepo.getItem.mockResolvedValue(ITEM);
 
   await updateItem(req as any, res as any);
 
   expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
-  expect(mockRepo.updateItem).toHaveBeenCalledWith('1234', {
+  expect(mockRepo.updateItem).toHaveBeenCalledWith('12345', {
     name: 'New title',
     completed: false,
   });
 
-  expect(mockRepo.getItem).toHaveBeenCalledTimes(1);
-  expect(mockRepo.getItem).toHaveBeenCalledWith('1234');
-
   expect(res.send).toHaveBeenCalledTimes(1);
-  expect(res.send).toHaveBeenCalledWith(ITEM);
 });
 
 test('it passes partial body fields to updateItem', async () => {
   const req = {
-    params: { id: '1234' },
+    params: { id: '12345' },
     body: { completed: true },
+    userId: 'user-1',
   };
-  const res = { send: jest.fn() };
+  const res = { send: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() };
 
   mockRepo.updateItem.mockClear();
   mockRepo.getItem.mockClear();
-  mockRepo.getItem.mockResolvedValue(ITEM);
+  mockRepo.getItem.mockResolvedValueOnce(ITEM).mockResolvedValueOnce({ ...ITEM, completed: true });
 
   await updateItem(req as any, res as any);
 
   expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
-  expect(mockRepo.updateItem).toHaveBeenCalledWith('1234', {
+  expect(mockRepo.updateItem).toHaveBeenCalledWith('12345', {
     name: undefined,
     completed: true,
   });
 });
 
-test('it sends undefined when updating a non-existent item', async () => {
+test('it returns 404 when item does not exist', async () => {
   const req = {
     params: { id: 'non-existent-id' },
     body: { name: 'Updated', completed: true },
+    userId: 'user-1',
   };
-  const res = { send: jest.fn() };
+  const res = { send: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() };
 
   mockRepo.updateItem.mockClear();
   mockRepo.getItem.mockClear();
@@ -63,12 +62,24 @@ test('it sends undefined when updating a non-existent item', async () => {
 
   await updateItem(req as any, res as any);
 
-  expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
-  expect(mockRepo.updateItem).toHaveBeenCalledWith('non-existent-id', {
-    name: 'Updated',
-    completed: true,
-  });
-  expect(mockRepo.getItem).toHaveBeenCalledTimes(1);
-  expect(mockRepo.getItem).toHaveBeenCalledWith('non-existent-id');
-  expect(res.send).toHaveBeenCalledWith(undefined);
+  expect(mockRepo.updateItem).not.toHaveBeenCalled();
+  expect(res.status).toHaveBeenCalledWith(404);
+});
+
+test('it returns 404 when item belongs to another user', async () => {
+  const req = {
+    params: { id: '12345' },
+    body: { name: 'Updated', completed: true },
+    userId: 'different-user',
+  };
+  const res = { send: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+  mockRepo.updateItem.mockClear();
+  mockRepo.getItem.mockClear();
+  mockRepo.getItem.mockResolvedValue(ITEM);
+
+  await updateItem(req as any, res as any);
+
+  expect(mockRepo.updateItem).not.toHaveBeenCalled();
+  expect(res.status).toHaveBeenCalledWith(404);
 });

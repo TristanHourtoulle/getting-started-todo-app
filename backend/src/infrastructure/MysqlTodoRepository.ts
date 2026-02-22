@@ -7,6 +7,7 @@ interface MysqlRow {
   id: string;
   name: string;
   completed: number;
+  user_id: string;
 }
 
 export class MysqlTodoRepository implements TodoRepository {
@@ -54,7 +55,7 @@ export class MysqlTodoRepository implements TodoRepository {
 
     return new Promise((resolve, reject) => {
       this.getPool().query(
-        'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean) DEFAULT CHARSET utf8mb4',
+        'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, user_id varchar(36)) DEFAULT CHARSET utf8mb4',
         (err) => {
           if (err) return reject(err);
           if (process.env.NODE_ENV !== 'test')
@@ -77,14 +78,16 @@ export class MysqlTodoRepository implements TodoRepository {
     });
   }
 
-  async getItems(): Promise<TodoItem[]> {
+  async getItems(userId: string): Promise<TodoItem[]> {
     return new Promise((resolve, reject) => {
-      this.getPool().query('SELECT * FROM todo_items', (err, rows) => {
+      this.getPool().query('SELECT * FROM todo_items WHERE user_id = ?', [userId], (err, rows) => {
         if (err) return reject(err);
         resolve(
           (rows as MysqlRow[]).map((item) => ({
-            ...item,
+            id: item.id,
+            name: item.name,
             completed: item.completed === 1,
+            userId: item.user_id,
           })),
         );
       });
@@ -95,12 +98,15 @@ export class MysqlTodoRepository implements TodoRepository {
     return new Promise((resolve, reject) => {
       this.getPool().query('SELECT * FROM todo_items WHERE id=?', [id], (err, rows) => {
         if (err) return reject(err);
-        resolve(
-          (rows as MysqlRow[]).map((item) => ({
-            ...item,
-            completed: item.completed === 1,
-          }))[0],
-        );
+        const results = rows as MysqlRow[];
+        const row = results[0];
+        if (!row) return resolve(undefined);
+        resolve({
+          id: row.id,
+          name: row.name,
+          completed: row.completed === 1,
+          userId: row.user_id,
+        });
       });
     });
   }
@@ -108,8 +114,8 @@ export class MysqlTodoRepository implements TodoRepository {
   async storeItem(item: TodoItem): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getPool().query(
-        'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
-        [item.id, item.name, item.completed ? 1 : 0],
+        'INSERT INTO todo_items (id, name, completed, user_id) VALUES (?, ?, ?, ?)',
+        [item.id, item.name, item.completed ? 1 : 0, item.userId],
         (err) => {
           if (err) return reject(err);
           resolve();
@@ -134,6 +140,15 @@ export class MysqlTodoRepository implements TodoRepository {
   async removeItem(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getPool().query('DELETE FROM todo_items WHERE id = ?', [id], (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
+  async removeItemsByUserId(userId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.getPool().query('DELETE FROM todo_items WHERE user_id = ?', [userId], (err) => {
         if (err) return reject(err);
         resolve();
       });

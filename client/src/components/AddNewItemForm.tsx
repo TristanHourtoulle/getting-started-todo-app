@@ -2,12 +2,8 @@ import { FormEvent, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-
-interface TodoItem {
-    id: string;
-    name: string;
-    completed: boolean;
-}
+import { api } from '../services/api';
+import { TodoItem } from '../types/todo';
 
 interface AddItemFormProps {
     onNewItem: (item: TodoItem) => void;
@@ -21,15 +17,8 @@ export function AddItemForm({ onNewItem }: AddItemFormProps) {
         e.preventDefault();
         setSubmitting(true);
 
-        const options = {
-            method: 'POST',
-            body: JSON.stringify({ name: newItem }),
-            headers: { 'Content-Type': 'application/json' },
-        };
-
-        fetch('/api/items', options)
-            .then((r) => r.json())
-            .then((item: TodoItem) => {
+        api.addItem(newItem)
+            .then((item) => {
                 onNewItem(item);
                 setSubmitting(false);
                 setNewItem('');

@@ -31,3 +31,23 @@ test('it updates items correctly', async () => {
     expect(res.send.mock.calls[0].length).toBe(1);
     expect(res.send.mock.calls[0][0]).toEqual(ITEM);
 });
+
+test('it passes partial body fields to updateItem', async () => {
+    const req = {
+        params: { id: 1234 },
+        body: { completed: true },
+    };
+    const res = { send: jest.fn() };
+
+    db.updateItem.mockClear();
+    db.getItem.mockClear();
+    db.getItem.mockReturnValue(Promise.resolve(ITEM));
+
+    await updateItem(req, res);
+
+    expect(db.updateItem.mock.calls.length).toBe(1);
+    expect(db.updateItem.mock.calls[0][1]).toEqual({
+        name: undefined,
+        completed: true,
+    });
+});

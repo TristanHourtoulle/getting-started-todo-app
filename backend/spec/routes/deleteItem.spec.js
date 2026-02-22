@@ -18,3 +18,16 @@ test('it removes item correctly', async () => {
     expect(res.sendStatus.mock.calls[0].length).toBe(1);
     expect(res.sendStatus.mock.calls[0][0]).toBe(200);
 });
+
+test('it calls removeItem even if item does not exist', async () => {
+    const req = { params: { id: 'non-existent-id' } };
+    const res = { sendStatus: jest.fn() };
+
+    db.removeItem.mockClear();
+
+    await deleteItem(req, res);
+
+    expect(db.removeItem.mock.calls.length).toBe(1);
+    expect(db.removeItem.mock.calls[0][0]).toBe('non-existent-id');
+    expect(res.sendStatus.mock.calls[0][0]).toBe(200);
+});

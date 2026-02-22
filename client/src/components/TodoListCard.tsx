@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AddItemForm } from './AddNewItemForm';
 import { ItemDisplay } from './ItemDisplay';
+import { api } from '../services/api';
 
 interface TodoItem {
     id: string;
     name: string;
     completed: boolean;
+    userId: string;
 }
 
 export function TodoListCard() {
     const [items, setItems] = useState<TodoItem[] | null>(null);
 
     useEffect(() => {
-        fetch('/api/items')
-            .then((r) => r.json())
-            .then((data: TodoItem[]) => setItems(data));
+        api.getItems().then(setItems);
     }, []);
 
     const onNewItem = useCallback(
@@ -50,7 +50,7 @@ export function TodoListCard() {
         [],
     );
 
-    if (items === null) return 'Loading...';
+    if (items === null) return <p>Loading...</p>;
 
     return (
         <>

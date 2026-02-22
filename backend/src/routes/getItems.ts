@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const db = require('../persistence');
 
 module.exports = async (_req: Request, res: Response) => {

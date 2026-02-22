@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 
-/* eslint-disable @typescript-eslint/no-var-requires */
 const db = require('./persistence');
 const getGreeting = require('./routes/getGreeting');
 const getItems = require('./routes/getItems');

@@ -41,7 +41,7 @@ repo
 const gracefulShutdown = () => {
   repo
     .teardown()
-    .catch(() => {})
+    .catch((err: unknown) => console.error('Shutdown error:', err))
     .then(() => process.exit());
 };
 

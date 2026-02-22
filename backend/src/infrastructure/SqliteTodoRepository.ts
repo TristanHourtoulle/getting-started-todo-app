@@ -9,12 +9,21 @@ interface SqliteRow {
   completed: number;
 }
 
+const verbose = sqlite3.verbose();
+
 export class SqliteTodoRepository implements TodoRepository {
-  private db!: InstanceType<typeof sqlite3.verbose.prototype.Database>;
+  private db: InstanceType<typeof verbose.Database> | null = null;
   private readonly location: string;
 
   constructor(location?: string) {
     this.location = location ?? process.env.SQLITE_DB_LOCATION ?? '/etc/todos/todo.db';
+  }
+
+  private getDb(): InstanceType<typeof verbose.Database> {
+    if (!this.db) {
+      throw new Error('SqliteTodoRepository not initialized. Call init() first.');
+    }
+    return this.db;
   }
 
   async init(): Promise<void> {
@@ -23,8 +32,6 @@ export class SqliteTodoRepository implements TodoRepository {
       fs.mkdirSync(dirName, { recursive: true });
     }
 
-    const verbose = sqlite3.verbose();
-
     return new Promise((resolve, reject) => {
       this.db = new verbose.Database(this.location, (err: Error | null) => {
         if (err) return reject(err);
@@ -32,7 +39,7 @@ export class SqliteTodoRepository implements TodoRepository {
         if (process.env.NODE_ENV !== 'test')
           console.log(`Using sqlite database at ${this.location}`);
 
-        this.db.run(
+        this.getDb().run(
           'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean)',
           (err: Error | null) => {
             if (err) return reject(err);
@@ -45,16 +52,19 @@ export class SqliteTodoRepository implements TodoRepository {
 
   async teardown(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.close((err: Error | null) => {
+      this.getDb().close((err: Error | null) => {
         if (err) reject(err);
-        else resolve();
+        else {
+          this.db = null;
+          resolve();
+        }
       });
     });
   }
 
   async getItems(): Promise<TodoItem[]> {
     return new Promise((resolve, reject) => {
-      this.db.all('SELECT * FROM todo_items', (err: Error | null, rows: SqliteRow[]) => {
+      this.getDb().all('SELECT * FROM todo_items', (err: Error | null, rows: SqliteRow[]) => {
         if (err) return reject(err);
         resolve(
           rows.map((item) => ({
@@ -68,7 +78,7 @@ export class SqliteTodoRepository implements TodoRepository {
 
   async getItem(id: string): Promise<TodoItem | undefined> {
     return new Promise((resolve, reject) => {
-      this.db.all('SELECT * FROM todo_items WHERE id=?', [id], (err: Error | null, rows: SqliteRow[]) => {
+      this.getDb().all('SELECT * FROM todo_items WHERE id=?', [id], (err: Error | null, rows: SqliteRow[]) => {
         if (err) return reject(err);
         resolve(
           rows.map((item) => ({
@@ -82,7 +92,7 @@ export class SqliteTodoRepository implements TodoRepository {
 
   async storeItem(item: TodoItem): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.run(
+      this.getDb().run(
         'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
         [item.id, item.name, item.completed ? 1 : 0],
         (err: Error | null) => {
@@ -95,7 +105,7 @@ export class SqliteTodoRepository implements TodoRepository {
 
   async updateItem(id: string, item: Partial<TodoItem>): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.run(
+      this.getDb().run(
         'UPDATE todo_items SET name=?, completed=? WHERE id = ?',
         [item.name, item.completed ? 1 : 0, id],
         (err: Error | null) => {
@@ -108,7 +118,7 @@ export class SqliteTodoRepository implements TodoRepository {
 
   async removeItem(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.run('DELETE FROM todo_items WHERE id = ?', [id], (err: Error | null) => {
+      this.getDb().run('DELETE FROM todo_items WHERE id = ?', [id], (err: Error | null) => {
         if (err) return reject(err);
         resolve();
       });

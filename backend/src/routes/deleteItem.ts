@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import { TodoRepository } from '../domain/todo';
 
-const db = require('../persistence');
-
-module.exports = async (req: Request, res: Response) => {
-    await db.removeItem(req.params.id);
+export function makeDeleteItem(repo: TodoRepository) {
+  return async (req: Request, res: Response) => {
+    await repo.removeItem(req.params.id as string);
     res.sendStatus(200);
-};
+  };
+}

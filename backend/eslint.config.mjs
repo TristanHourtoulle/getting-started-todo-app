@@ -14,8 +14,12 @@ export default defineConfig(
                 'error',
                 { argsIgnorePattern: '^_' },
             ],
-            // TODO(step-7): re-enable once migrated to ES imports
-            '@typescript-eslint/no-require-imports': 'off',
+        },
+    },
+    {
+        files: ['spec/**/*.ts'],
+        rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
         },
     },
     {

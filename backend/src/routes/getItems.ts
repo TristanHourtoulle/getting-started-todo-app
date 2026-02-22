@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import { TodoRepository } from '../domain/todo';
 
-const db = require('../persistence');
-
-module.exports = async (_req: Request, res: Response) => {
-    const items = await db.getItems();
+export function makeGetItems(repo: TodoRepository) {
+  return async (_req: Request, res: Response) => {
+    const items = await repo.getItems();
     res.send(items);
-};
+  };
+}

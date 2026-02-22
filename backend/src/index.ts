@@ -1,5 +1,7 @@
-const express = require('express');
-const app = express();
+import express from 'express';
+import path from 'path';
+
+/* eslint-disable @typescript-eslint/no-var-requires */
 const db = require('./persistence');
 const getGreeting = require('./routes/getGreeting');
 const getItems = require('./routes/getItems');
@@ -7,8 +9,10 @@ const addItem = require('./routes/addItem');
 const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 
+const app = express();
+
 app.use(express.json());
-app.use(express.static(__dirname + '/static'));
+app.use(express.static(path.join(__dirname, 'static')));
 
 app.get('/api/greeting', getGreeting);
 app.get('/api/items', getItems);
@@ -20,7 +24,7 @@ db.init()
     .then(() => {
         app.listen(3000, () => console.log('Listening on port 3000'));
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
         console.error(err);
         process.exit(1);
     });

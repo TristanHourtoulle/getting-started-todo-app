@@ -1,3 +1,5 @@
+export {};
+/* eslint-disable @typescript-eslint/no-var-requires */
 const db = require('../../src/persistence');
 const getItems = require('../../src/routes/getItems');
 const ITEMS = [{ id: 12345 }];

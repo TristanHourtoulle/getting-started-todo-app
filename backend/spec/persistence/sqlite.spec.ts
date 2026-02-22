@@ -1,11 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'todo-test-'));
 const location = path.join(tmpDir, 'todo.db');
 process.env.SQLITE_DB_LOCATION = location;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const db = require('../../src/persistence/sqlite');
 
 const ITEM = {
@@ -51,10 +52,7 @@ test('it can update an existing item', async () => {
 
     await db.storeItem(ITEM);
 
-    await db.updateItem(
-        ITEM.id,
-        Object.assign({}, ITEM, { completed: !ITEM.completed }),
-    );
+    await db.updateItem(ITEM.id, { ...ITEM, completed: !ITEM.completed });
 
     const items = await db.getItems();
     expect(items.length).toBe(1);

@@ -1,6 +1,18 @@
-const waitPort = require('wait-port');
-const fs = require('fs');
-const mysql = require('mysql2');
+import waitPort from 'wait-port';
+import fs from 'fs';
+import mysql from 'mysql2';
+
+interface TodoItem {
+    id: string;
+    name: string;
+    completed: boolean;
+}
+
+interface MysqlRow {
+    id: string;
+    name: string;
+    completed: number;
+}
 
 const {
     MYSQL_HOST: HOST,
@@ -13,13 +25,13 @@ const {
     MYSQL_DB_FILE: DB_FILE,
 } = process.env;
 
-let pool;
+let pool: mysql.Pool;
 
-async function init() {
-    const host = HOST_FILE ? fs.readFileSync(HOST_FILE) : HOST;
-    const user = USER_FILE ? fs.readFileSync(USER_FILE) : USER;
-    const password = PASSWORD_FILE ? fs.readFileSync(PASSWORD_FILE) : PASSWORD;
-    const database = DB_FILE ? fs.readFileSync(DB_FILE) : DB;
+async function init(): Promise<void> {
+    const host = HOST_FILE ? fs.readFileSync(HOST_FILE, 'utf-8') : HOST;
+    const user = USER_FILE ? fs.readFileSync(USER_FILE, 'utf-8') : USER;
+    const password = PASSWORD_FILE ? fs.readFileSync(PASSWORD_FILE, 'utf-8') : PASSWORD;
+    const database = DB_FILE ? fs.readFileSync(DB_FILE, 'utf-8') : DB;
 
     await waitPort({
         host,
@@ -50,7 +62,7 @@ async function init() {
     });
 }
 
-async function teardown() {
+async function teardown(): Promise<void> {
     return new Promise((acc, rej) => {
         pool.end((err) => {
             if (err) rej(err);
@@ -59,37 +71,35 @@ async function teardown() {
     });
 }
 
-async function getItems() {
+async function getItems(): Promise<TodoItem[]> {
     return new Promise((acc, rej) => {
         pool.query('SELECT * FROM todo_items', (err, rows) => {
             if (err) return rej(err);
             acc(
-                rows.map((item) =>
-                    Object.assign({}, item, {
-                        completed: item.completed === 1,
-                    }),
-                ),
+                (rows as MysqlRow[]).map((item) => ({
+                    ...item,
+                    completed: item.completed === 1,
+                })),
             );
         });
     });
 }
 
-async function getItem(id) {
+async function getItem(id: string): Promise<TodoItem | undefined> {
     return new Promise((acc, rej) => {
         pool.query('SELECT * FROM todo_items WHERE id=?', [id], (err, rows) => {
             if (err) return rej(err);
             acc(
-                rows.map((item) =>
-                    Object.assign({}, item, {
-                        completed: item.completed === 1,
-                    }),
-                )[0],
+                (rows as MysqlRow[]).map((item) => ({
+                    ...item,
+                    completed: item.completed === 1,
+                }))[0],
             );
         });
     });
 }
 
-async function storeItem(item) {
+async function storeItem(item: TodoItem): Promise<void> {
     return new Promise((acc, rej) => {
         pool.query(
             'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
@@ -102,7 +112,7 @@ async function storeItem(item) {
     });
 }
 
-async function updateItem(id, item) {
+async function updateItem(id: string, item: Partial<TodoItem>): Promise<void> {
     return new Promise((acc, rej) => {
         pool.query(
             'UPDATE todo_items SET name=?, completed=? WHERE id=?',
@@ -115,7 +125,7 @@ async function updateItem(id, item) {
     });
 }
 
-async function removeItem(id) {
+async function removeItem(id: string): Promise<void> {
     return new Promise((acc, rej) => {
         pool.query('DELETE FROM todo_items WHERE id = ?', [id], (err) => {
             if (err) return rej(err);

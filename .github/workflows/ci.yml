@@ -32,6 +32,35 @@ jobs:
         working-directory: backend
         run: npm test
 
+  lint:
+    name: Lint (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [backend, client]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.dir }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.dir }}
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ${{ matrix.dir }}
+        run: npm run lint
+
+      - name: Run dependency-cruiser
+        if: matrix.dir == 'backend'
+        working-directory: ${{ matrix.dir }}
+        run: npm run lint:deps
+
   dependency-audit:
     if: github.event_name == 'pull_request'
     name: Dependency Audit (${{ matrix.dir }})

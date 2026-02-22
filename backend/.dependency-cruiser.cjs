@@ -33,6 +33,14 @@ module.exports = {
             from: { path: '^src/routes/' },
             to: { path: 'persistence/mysql' },
         },
+        {
+            name: 'no-infrastructure-in-routes',
+            comment:
+                'Routes must not import infrastructure adapters directly. Use domain interfaces.',
+            severity: 'error',
+            from: { path: '^src/routes/' },
+            to: { path: '^src/infrastructure/' },
+        },
     ],
     options: {
         doNotFollow: {

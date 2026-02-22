@@ -33,6 +33,7 @@ jobs:
         run: npm test
 
   lint:
+    if: github.event_name == 'pull_request'
     name: Lint (${{ matrix.dir }})
     runs-on: ubuntu-latest
     strategy:

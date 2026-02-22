@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
+import { TodoRepository } from '../domain/todo';
 
-const db = require('../persistence');
-
-module.exports = async (req: Request, res: Response) => {
+export function makeAddItem(repo: TodoRepository) {
+  return async (req: Request, res: Response) => {
     const item = {
-        id: uuid(),
-        name: req.body.name,
-        completed: false,
+      id: uuid(),
+      name: req.body.name,
+      completed: false,
     };
 
-    await db.storeItem(item);
+    await repo.storeItem(item);
     res.send(item);
-};
+  };
+}

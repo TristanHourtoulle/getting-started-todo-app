@@ -1,74 +1,74 @@
-export {};
-const db = require('../../src/persistence');
-const updateItem = require('../../src/routes/updateItem');
-const ITEM = { id: 12345 };
+import { makeUpdateItem } from '../../src/routes/updateItem';
+import { createMockRepo } from '../helpers/createMockRepo';
 
-jest.mock('../../src/persistence', () => ({
-    getItem: jest.fn(),
-    updateItem: jest.fn(),
-}));
+const ITEM = { id: '12345', name: 'Test', completed: false };
+
+const mockRepo = createMockRepo();
+const updateItem = makeUpdateItem(mockRepo);
 
 test('it updates items correctly', async () => {
-    const req = {
-        params: { id: 1234 },
-        body: { name: 'New title', completed: false },
-    };
-    const res = { send: jest.fn() };
+  const req = {
+    params: { id: '1234' },
+    body: { name: 'New title', completed: false },
+  };
+  const res = { send: jest.fn() };
 
-    db.getItem.mockReturnValue(Promise.resolve(ITEM));
+  mockRepo.getItem.mockResolvedValue(ITEM);
 
-    await updateItem(req, res);
+  await updateItem(req as any, res as any);
 
-    expect(db.updateItem.mock.calls.length).toBe(1);
-    expect(db.updateItem.mock.calls[0][0]).toBe(req.params.id);
-    expect(db.updateItem.mock.calls[0][1]).toEqual({
-        name: 'New title',
-        completed: false,
-    });
+  expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.updateItem).toHaveBeenCalledWith('1234', {
+    name: 'New title',
+    completed: false,
+  });
 
-    expect(db.getItem.mock.calls.length).toBe(1);
-    expect(db.getItem.mock.calls[0][0]).toBe(req.params.id);
+  expect(mockRepo.getItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.getItem).toHaveBeenCalledWith('1234');
 
-    expect(res.send.mock.calls[0].length).toBe(1);
-    expect(res.send.mock.calls[0][0]).toEqual(ITEM);
+  expect(res.send).toHaveBeenCalledTimes(1);
+  expect(res.send).toHaveBeenCalledWith(ITEM);
 });
 
 test('it passes partial body fields to updateItem', async () => {
-    const req = {
-        params: { id: 1234 },
-        body: { completed: true },
-    };
-    const res = { send: jest.fn() };
+  const req = {
+    params: { id: '1234' },
+    body: { completed: true },
+  };
+  const res = { send: jest.fn() };
 
-    db.updateItem.mockClear();
-    db.getItem.mockClear();
-    db.getItem.mockReturnValue(Promise.resolve(ITEM));
+  mockRepo.updateItem.mockClear();
+  mockRepo.getItem.mockClear();
+  mockRepo.getItem.mockResolvedValue(ITEM);
 
-    await updateItem(req, res);
+  await updateItem(req as any, res as any);
 
-    expect(db.updateItem.mock.calls.length).toBe(1);
-    expect(db.updateItem.mock.calls[0][1]).toEqual({
-        name: undefined,
-        completed: true,
-    });
+  expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.updateItem).toHaveBeenCalledWith('1234', {
+    name: undefined,
+    completed: true,
+  });
 });
 
 test('it sends undefined when updating a non-existent item', async () => {
-    const req = {
-        params: { id: 'non-existent-id' },
-        body: { name: 'Updated', completed: true },
-    };
-    const res = { send: jest.fn() };
+  const req = {
+    params: { id: 'non-existent-id' },
+    body: { name: 'Updated', completed: true },
+  };
+  const res = { send: jest.fn() };
 
-    db.updateItem.mockClear();
-    db.getItem.mockClear();
-    db.getItem.mockReturnValue(Promise.resolve(undefined));
+  mockRepo.updateItem.mockClear();
+  mockRepo.getItem.mockClear();
+  mockRepo.getItem.mockResolvedValue(undefined);
 
-    await updateItem(req, res);
+  await updateItem(req as any, res as any);
 
-    expect(db.updateItem.mock.calls.length).toBe(1);
-    expect(db.updateItem.mock.calls[0][0]).toBe('non-existent-id');
-    expect(db.getItem.mock.calls.length).toBe(1);
-    expect(db.getItem.mock.calls[0][0]).toBe('non-existent-id');
-    expect(res.send.mock.calls[0][0]).toBeUndefined();
+  expect(mockRepo.updateItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.updateItem).toHaveBeenCalledWith('non-existent-id', {
+    name: 'Updated',
+    completed: true,
+  });
+  expect(mockRepo.getItem).toHaveBeenCalledTimes(1);
+  expect(mockRepo.getItem).toHaveBeenCalledWith('non-existent-id');
+  expect(res.send).toHaveBeenCalledWith(undefined);
 });

@@ -129,5 +129,10 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 # Project internal spec
 audit-and-spec.md

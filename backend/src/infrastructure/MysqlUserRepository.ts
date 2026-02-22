@@ -1,7 +1,7 @@
 import waitPort from 'wait-port';
 import fs from 'fs';
 import mysql from 'mysql2';
-import { User, UserRepository } from '../domain/user';
+import { User, UserRepository, UserExportData } from '../domain/user';
 
 interface MysqlUserRow {
   id: string;
@@ -137,7 +137,7 @@ export class MysqlUserRepository implements UserRepository {
     });
   }
 
-  async getAllUserData(id: string): Promise<object> {
+  async getAllUserData(id: string): Promise<UserExportData | null> {
     return new Promise((resolve, reject) => {
       this.getPool().query(
         'SELECT id, email, created_at FROM users WHERE id = ?',
@@ -145,7 +145,7 @@ export class MysqlUserRepository implements UserRepository {
         (err, rows) => {
           if (err) return reject(err);
           const results = rows as MysqlUserRow[];
-          if (results.length === 0) return resolve({});
+          if (results.length === 0) return resolve(null);
           const row = results[0]!;
           resolve({
             id: row.id,

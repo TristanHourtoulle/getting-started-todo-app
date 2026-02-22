@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3';
 import fs from 'fs';
 import path from 'path';
-import { User, UserRepository } from '../domain/user';
+import { User, UserRepository, UserExportData } from '../domain/user';
 
 interface SqliteUserRow {
   id: string;
@@ -125,14 +125,14 @@ export class SqliteUserRepository implements UserRepository {
     });
   }
 
-  async getAllUserData(id: string): Promise<object> {
+  async getAllUserData(id: string): Promise<UserExportData | null> {
     return new Promise((resolve, reject) => {
       this.getDb().get(
         'SELECT id, email, created_at FROM users WHERE id = ?',
         [id],
         (err: Error | null, row: SqliteUserRow | undefined) => {
           if (err) return reject(err);
-          if (!row) return resolve({});
+          if (!row) return resolve(null);
           resolve({
             id: row.id,
             email: row.email,

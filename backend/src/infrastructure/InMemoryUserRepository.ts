@@ -1,4 +1,4 @@
-import { User, UserRepository } from '../domain/user';
+import { User, UserRepository, UserExportData } from '../domain/user';
 
 export class InMemoryUserRepository implements UserRepository {
   private users: Map<string, User> = new Map();
@@ -31,13 +31,13 @@ export class InMemoryUserRepository implements UserRepository {
     this.users.delete(id);
   }
 
-  async getAllUserData(id: string): Promise<object> {
+  async getAllUserData(id: string): Promise<UserExportData | null> {
     const user = this.users.get(id);
-    if (!user) return {};
+    if (!user) return null;
     return {
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt,
+      createdAt: user.createdAt.toISOString(),
     };
   }
 }

@@ -5,6 +5,12 @@ export interface User {
   createdAt: Date;
 }
 
+export interface UserExportData {
+  id: string;
+  email: string;
+  createdAt: string;
+}
+
 export interface UserRepository {
   init(): Promise<void>;
   teardown(): Promise<void>;
@@ -12,5 +18,5 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | undefined>;
   findById(id: string): Promise<User | undefined>;
   deleteUser(id: string): Promise<void>;
-  getAllUserData(id: string): Promise<object>;
+  getAllUserData(id: string): Promise<UserExportData | null>;
 }

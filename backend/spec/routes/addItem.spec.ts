@@ -1,5 +1,4 @@
 export {};
-/* eslint-disable @typescript-eslint/no-var-requires */
 const db = require('../../src/persistence');
 const addItem = require('../../src/routes/addItem');
 const { v4: uuid } = require('uuid');

@@ -6,6 +6,8 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "lint": "eslint 'src/**/*.ts' 'spec/**/*.ts'",
+    "lint:deps": "depcruise src --config .dependency-cruiser.cjs",
     "format": "prettier -l --write \"**/*.{ts,js}\"",
     "format-check": "prettier --check \"**/*.{ts,js}\"",
     "test": "jest",
@@ -31,15 +33,21 @@
     "singleQuote": true
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.0",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "dependency-cruiser": "^17.3.8",
+    "eslint": "^10.0.1",
     "jest": "^29.7.0",
     "nodemon": "^3.0.3",
     "prettier": "^3.2.4",
     "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
   }
 }

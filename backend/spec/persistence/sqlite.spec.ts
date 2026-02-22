@@ -6,7 +6,6 @@ const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'todo-test-'));
 const location = path.join(tmpDir, 'todo.db');
 process.env.SQLITE_DB_LOCATION = location;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const db = require('../../src/persistence/sqlite');
 
 const ITEM = {

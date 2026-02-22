@@ -27,3 +27,30 @@ jobs:
       - name: Run tests
         working-directory: backend
         run: npm test
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: npm audit --audit-level=critical
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Audit client dependencies
+        working-directory: client
+        run: npm audit --audit-level=critical

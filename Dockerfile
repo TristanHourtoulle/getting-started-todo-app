@@ -18,7 +18,8 @@ WORKDIR /usr/local/app
 FROM base AS client-base
 COPY client/package.json client/package-lock.json ./
 RUN npm install
-COPY client/.eslintrc.cjs client/index.html client/vite.config.js ./
+COPY client/.eslintrc.cjs client/index.html client/vite.config.ts ./
+COPY client/tsconfig.json client/tsconfig.app.json client/tsconfig.node.json ./
 COPY client/public ./public
 COPY client/src ./src
 
@@ -56,6 +57,7 @@ RUN npm run build
 FROM base AS backend-dev
 COPY backend/package.json backend/package-lock.json ./
 RUN npm install
+COPY backend/tsconfig.json backend/jest.config.js ./
 COPY backend/spec ./spec
 COPY backend/src ./src
 CMD ["npm", "run", "dev"]

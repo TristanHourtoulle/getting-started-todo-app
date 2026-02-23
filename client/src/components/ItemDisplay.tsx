@@ -16,7 +16,11 @@ interface ItemDisplayProps {
     onItemRemoval: (item: TodoItem) => void;
 }
 
-export function ItemDisplay({ item, onItemUpdate, onItemRemoval }: ItemDisplayProps) {
+export function ItemDisplay({
+    item,
+    onItemUpdate,
+    onItemRemoval,
+}: ItemDisplayProps) {
     const toggleCompletion = () => {
         api.updateItem(item.id, {
             name: item.name,
@@ -29,7 +33,10 @@ export function ItemDisplay({ item, onItemUpdate, onItemRemoval }: ItemDisplayPr
     };
 
     return (
-        <Container fluid className={`item ${item.completed ? 'completed' : ''}`}>
+        <Container
+            fluid
+            className={`item ${item.completed ? 'completed' : ''}`}
+        >
             <Row>
                 <Col xs={2} className="text-center">
                     <Button

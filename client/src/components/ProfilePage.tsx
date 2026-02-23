@@ -26,13 +26,21 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
     useEffect(() => {
         api.getProfile()
             .then(setProfile)
-            .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load profile'));
+            .catch((err) =>
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to load profile',
+                ),
+            );
     }, []);
 
     const handleExport = async () => {
         try {
             const data = await api.exportData();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: 'application/json',
+            });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -60,7 +68,12 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
 
     return (
         <div className="mt-4">
-            <Button variant="outline-secondary" size="sm" onClick={onBack} className="mb-3">
+            <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={onBack}
+                className="mb-3"
+            >
                 Back to Todos
             </Button>
             <h2 className="mb-4">Profile</h2>
@@ -68,8 +81,13 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
             {profile && (
                 <Card className="mb-3">
                     <Card.Body>
-                        <p><strong>Email:</strong> {profile.email}</p>
-                        <p><strong>Member since:</strong> {new Date(profile.createdAt).toLocaleDateString()}</p>
+                        <p>
+                            <strong>Email:</strong> {profile.email}
+                        </p>
+                        <p>
+                            <strong>Member since:</strong>{' '}
+                            {new Date(profile.createdAt).toLocaleDateString()}
+                        </p>
                     </Card.Body>
                 </Card>
             )}
@@ -78,21 +96,32 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                 <Button variant="outline-primary" onClick={handleExport}>
                     Export My Data
                 </Button>
-                <Button variant="danger" onClick={() => setShowDeleteModal(true)} disabled={deleting}>
+                <Button
+                    variant="danger"
+                    onClick={() => setShowDeleteModal(true)}
+                    disabled={deleting}
+                >
                     {deleting ? 'Deleting...' : 'Delete My Account'}
                 </Button>
             </div>
 
-            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+            <Modal
+                show={showDeleteModal}
+                onHide={() => setShowDeleteModal(false)}
+                centered
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>Confirm Account Deletion</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Are you sure? This will permanently delete your account and all your data.
-                    This action cannot be undone.
+                    Are you sure? This will permanently delete your account and
+                    all your data. This action cannot be undone.
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteModal(false)}
+                    >
                         Cancel
                     </Button>
                     <Button variant="danger" onClick={handleDeleteConfirm}>

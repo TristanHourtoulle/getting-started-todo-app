@@ -2,7 +2,7 @@ export interface TodoItem {
   id: string;
   name: string;
   completed: boolean;
-  userId: string;
+  userId: string | null;
 }
 
 export interface TodoRepository {
@@ -13,5 +13,5 @@ export interface TodoRepository {
   storeItem(item: TodoItem): Promise<void>;
   updateItem(id: string, item: Partial<TodoItem>): Promise<void>;
   removeItem(id: string): Promise<void>;
-  removeItemsByUserId(userId: string): Promise<void>;
+  anonymizeItemsByUserId(userId: string): Promise<void>;
 }

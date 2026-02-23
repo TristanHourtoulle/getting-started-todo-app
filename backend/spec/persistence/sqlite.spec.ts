@@ -95,17 +95,22 @@ test('it only returns items for the specified user', async () => {
   expect(items[0]?.id).toBe(ITEM.id);
 });
 
-test('it can remove all items for a user', async () => {
+test('it can anonymize all items for a user', async () => {
   await db.init();
 
   await db.storeItem(ITEM);
   await db.storeItem({ id: 'item-2', name: 'Second', completed: false, userId: USER_ID });
   await db.storeItem({ id: 'other-item', name: 'Other', completed: false, userId: 'other-user' });
 
-  await db.removeItemsByUserId(USER_ID);
+  await db.anonymizeItemsByUserId(USER_ID);
 
   const userItems = await db.getItems(USER_ID);
   expect(userItems.length).toBe(0);
+
+  const anonymized = await db.getItem(ITEM.id);
+  expect(anonymized).toBeDefined();
+  expect(anonymized!.userId).toBeNull();
+  expect(anonymized!.name).toBe('Test');
 
   const otherItems = await db.getItems('other-user');
   expect(otherItems.length).toBe(1);

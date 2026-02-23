@@ -33,10 +33,10 @@ export class InMemoryTodoRepository implements TodoRepository {
     this.items.delete(id);
   }
 
-  async removeItemsByUserId(userId: string): Promise<void> {
+  async anonymizeItemsByUserId(userId: string): Promise<void> {
     for (const [id, item] of this.items) {
       if (item.userId === userId) {
-        this.items.delete(id);
+        this.items.set(id, { ...item, userId: null });
       }
     }
   }

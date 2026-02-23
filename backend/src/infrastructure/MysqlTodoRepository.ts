@@ -7,7 +7,7 @@ interface MysqlRow {
   id: string;
   name: string;
   completed: number;
-  user_id: string;
+  user_id: string | null;
 }
 
 export class MysqlTodoRepository implements TodoRepository {
@@ -166,9 +166,9 @@ export class MysqlTodoRepository implements TodoRepository {
     });
   }
 
-  async removeItemsByUserId(userId: string): Promise<void> {
+  async anonymizeItemsByUserId(userId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.getPool().query('DELETE FROM todo_items WHERE user_id = ?', [userId], (err) => {
+      this.getPool().query('UPDATE todo_items SET user_id = NULL WHERE user_id = ?', [userId], (err) => {
         if (err) return reject(err);
         resolve();
       });

@@ -33,7 +33,11 @@ function AppContent() {
             <div className="d-flex justify-content-between align-items-center mb-3 mt-3">
                 <span className="text-muted">{email}</span>
                 <div className="d-flex gap-2">
-                    <Button variant="outline-secondary" size="sm" onClick={() => setPage('profile')}>
+                    <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => setPage('profile')}
+                    >
                         Profile
                     </Button>
                     <Button variant="outline-danger" size="sm" onClick={logout}>

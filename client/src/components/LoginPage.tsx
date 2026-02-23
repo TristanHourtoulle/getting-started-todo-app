@@ -54,13 +54,22 @@ export function LoginPage({ onSwitchToRegister }: LoginPageProps) {
                         required
                     />
                 </Form.Group>
-                <Button type="submit" variant="primary" disabled={submitting} className="w-100">
+                <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={submitting}
+                    className="w-100"
+                >
                     {submitting ? 'Logging in...' : 'Login'}
                 </Button>
             </Form>
             <p className="text-center mt-3">
                 No account?{' '}
-                <Button variant="link" className="p-0" onClick={onSwitchToRegister}>
+                <Button
+                    variant="link"
+                    className="p-0"
+                    onClick={onSwitchToRegister}
+                >
                     Register
                 </Button>
             </p>

@@ -97,10 +97,10 @@ export function makeDeleteProfile(userRepo: UserRepository, todoRepo: TodoReposi
     try {
       const userId = req.userId!;
 
-      await todoRepo.removeItemsByUserId(userId);
+      await todoRepo.anonymizeItemsByUserId(userId);
       await userRepo.deleteUser(userId);
 
-      res.json({ message: 'Account and all associated data deleted' });
+      res.json({ message: 'Account deleted, associated data anonymized' });
     } catch (err) {
       console.error('Delete profile error:', err);
       res.status(500).json({ error: 'Internal server error' });

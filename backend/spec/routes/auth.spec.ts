@@ -141,15 +141,15 @@ describe('getProfile', () => {
 describe('deleteProfile', () => {
   const deleteProfile = makeDeleteProfile(mockUserRepo, mockTodoRepo);
 
-  test('it deletes all user todos then the user account', async () => {
+  test('it anonymizes user todos then deletes the user account', async () => {
     const req: any = { userId: 'user-1' };
     const res = createRes();
 
     await deleteProfile(req, res);
 
-    expect(mockTodoRepo.removeItemsByUserId).toHaveBeenCalledWith('user-1');
+    expect(mockTodoRepo.anonymizeItemsByUserId).toHaveBeenCalledWith('user-1');
     expect(mockUserRepo.deleteUser).toHaveBeenCalledWith('user-1');
-    expect(res.json).toHaveBeenCalledWith({ message: 'Account and all associated data deleted' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'Account deleted, associated data anonymized' });
   });
 });
 

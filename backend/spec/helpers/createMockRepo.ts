@@ -16,7 +16,7 @@ export function createMockRepo(
     storeItem: jest.fn(),
     updateItem: jest.fn(),
     removeItem: jest.fn(),
-    removeItemsByUserId: jest.fn(),
+    anonymizeItemsByUserId: jest.fn(),
     ...overrides,
   };
 }

@@ -58,9 +58,29 @@ export class MysqlTodoRepository implements TodoRepository {
         'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, user_id varchar(36)) DEFAULT CHARSET utf8mb4',
         (err) => {
           if (err) return reject(err);
-          if (process.env.NODE_ENV !== 'test')
-            console.log(`Connected to mysql db at host ${HOST}`);
-          resolve();
+
+          this.getPool().query(
+            `SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'todo_items' AND COLUMN_NAME = 'user_id'`,
+            (err, rows) => {
+              if (err) return reject(err);
+              const count = (rows as Array<{ cnt: number }>)[0]?.cnt ?? 0;
+              if (count > 0) {
+                if (process.env.NODE_ENV !== 'test')
+                  console.log(`Connected to mysql db at host ${HOST}`);
+                return resolve();
+              }
+              this.getPool().query(
+                'ALTER TABLE todo_items ADD COLUMN user_id varchar(36)',
+                (err) => {
+                  if (err) return reject(err);
+                  if (process.env.NODE_ENV !== 'test')
+                    console.log(`Connected to mysql db at host ${HOST}`);
+                  resolve();
+                },
+              );
+            },
+          );
         },
       );
     });

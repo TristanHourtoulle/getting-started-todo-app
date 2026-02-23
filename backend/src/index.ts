@@ -12,30 +12,38 @@ import { makeGetItems } from './routes/getItems';
 import { makeAddItem } from './routes/addItem';
 import { makeUpdateItem } from './routes/updateItem';
 import { makeDeleteItem } from './routes/deleteItem';
-import { makeRegister, makeLogin, makeGetProfile, makeDeleteProfile, makeExportData } from './routes/auth';
+import {
+    makeRegister,
+    makeLogin,
+    makeGetProfile,
+    makeDeleteProfile,
+    makeExportData,
+} from './routes/auth';
 
 function getJwtSecret(): string {
-  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET environment variable is required in production');
-  }
-  return 'dev-secret-change-in-production';
+    if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+            'JWT_SECRET environment variable is required in production',
+        );
+    }
+    return 'dev-secret-change-in-production';
 }
 
 const JWT_SECRET = getJwtSecret();
 
 function createTodoRepository(): TodoRepository {
-  if (process.env.MYSQL_HOST) {
-    return new MysqlTodoRepository();
-  }
-  return new SqliteTodoRepository();
+    if (process.env.MYSQL_HOST) {
+        return new MysqlTodoRepository();
+    }
+    return new SqliteTodoRepository();
 }
 
 function createUserRepository(): UserRepository {
-  if (process.env.MYSQL_HOST) {
-    return new MysqlUserRepository();
-  }
-  return new SqliteUserRepository();
+    if (process.env.MYSQL_HOST) {
+        return new MysqlUserRepository();
+    }
+    return new SqliteUserRepository();
 }
 
 const todoRepo = createTodoRepository();
@@ -54,7 +62,11 @@ app.post('/api/auth/login', makeLogin(userRepo, JWT_SECRET));
 
 // Protected auth routes
 app.get('/api/auth/profile', authMiddleware, makeGetProfile(userRepo));
-app.delete('/api/auth/profile', authMiddleware, makeDeleteProfile(userRepo, todoRepo));
+app.delete(
+    '/api/auth/profile',
+    authMiddleware,
+    makeDeleteProfile(userRepo, todoRepo),
+);
 app.get('/api/auth/export', authMiddleware, makeExportData(userRepo, todoRepo));
 
 // Protected todo routes
@@ -64,18 +76,18 @@ app.put('/api/items/:id', authMiddleware, makeUpdateItem(todoRepo));
 app.delete('/api/items/:id', authMiddleware, makeDeleteItem(todoRepo));
 
 Promise.all([todoRepo.init(), userRepo.init()])
-  .then(() => {
-    app.listen(3000, () => console.log('Listening on port 3000'));
-  })
-  .catch((err: unknown) => {
-    console.error(err);
-    process.exit(1);
-  });
+    .then(() => {
+        app.listen(3000, () => console.log('Listening on port 3000'));
+    })
+    .catch((err: unknown) => {
+        console.error(err);
+        process.exit(1);
+    });
 
 const gracefulShutdown = () => {
-  Promise.all([todoRepo.teardown(), userRepo.teardown()])
-    .catch((err: unknown) => console.error('Shutdown error:', err))
-    .then(() => process.exit());
+    Promise.all([todoRepo.teardown(), userRepo.teardown()])
+        .catch((err: unknown) => console.error('Shutdown error:', err))
+        .then(() => process.exit());
 };
 
 process.on('SIGINT', gracefulShutdown);

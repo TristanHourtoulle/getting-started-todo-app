@@ -30,7 +30,9 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         try {
             await register(email, password);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Registration failed');
+            setError(
+                err instanceof Error ? err.message : 'Registration failed',
+            );
         } finally {
             setSubmitting(false);
         }
@@ -71,13 +73,22 @@ export function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
                         required
                     />
                 </Form.Group>
-                <Button type="submit" variant="success" disabled={submitting} className="w-100">
+                <Button
+                    type="submit"
+                    variant="success"
+                    disabled={submitting}
+                    className="w-100"
+                >
                     {submitting ? 'Registering...' : 'Register'}
                 </Button>
             </Form>
             <p className="text-center mt-3">
                 Already have an account?{' '}
-                <Button variant="link" className="p-0" onClick={onSwitchToLogin}>
+                <Button
+                    variant="link"
+                    className="p-0"
+                    onClick={onSwitchToLogin}
+                >
                     Login
                 </Button>
             </p>

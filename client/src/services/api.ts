@@ -55,11 +55,15 @@ export const api = {
     },
 
     getProfile() {
-        return request<{ id: string; email: string; createdAt: string }>('/api/auth/profile');
+        return request<{ id: string; email: string; createdAt: string }>(
+            '/api/auth/profile',
+        );
     },
 
     deleteProfile() {
-        return request<{ message: string }>('/api/auth/profile', { method: 'DELETE' });
+        return request<{ message: string }>('/api/auth/profile', {
+            method: 'DELETE',
+        });
     },
 
     exportData() {

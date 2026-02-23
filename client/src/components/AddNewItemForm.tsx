@@ -17,12 +17,11 @@ export function AddItemForm({ onNewItem }: AddItemFormProps) {
         e.preventDefault();
         setSubmitting(true);
 
-        api.addItem(newItem)
-            .then((item) => {
-                onNewItem(item);
-                setSubmitting(false);
-                setNewItem('');
-            });
+        api.addItem(newItem).then((item) => {
+            onNewItem(item);
+            setSubmitting(false);
+            setNewItem('');
+        });
     };
 
     return (
